@@ -1,0 +1,44 @@
+Berikut adalah panduan detail untuk pemula dalam membuat aplikasi Sistem Arsip Surat Sederhana Berbasis PHP:
+
+Langkah 1: Instalasi XAMPP
+Unduh installer XAMPP 5.6.30 dari situs resminya.
+Jalankan installer yang telah diunduh.
+Ikuti petunjuk instalasi standar, pilih lokasi instalasi yang diinginkan (biasanya di C:\xampp), dan pilih komponen yang ingin diinstal (pastikan PHP dipilih).
+Selesaikan instalasi dan pastikan XAMPP telah berhasil terinstal.
+
+Langkah 2: Menyiapkan Aplikasi
+Unduh aplikasi Sistem Arsip Surat Sederhana dari sumber yang tersedia.
+Ekstrak file aplikasi ke dalam folder C:\xampp\htdocs\simpelarsip.
+
+Langkah 3: Menyiapkan Database
+Buka browser dan ketikkan localhost/phpmyadmin di bilah alamat.
+Buat database baru dengan mengeklik tombol "New" di bagian kiri atas.
+Beri nama database baru sebagai arsipsimpel.
+Setelah database dibuat, pilih database tersebut dari daftar di sebelah kiri.
+Klik tab "Import", pilih file SQL yang disediakan dengan aplikasi, dan klik "Go" untuk mengimpor struktur dan data tabel.
+
+Langkah 4: Mengakses Aplikasi
+Buka browser dan ketikkan localhost/simpelarsip di bilah alamat.
+Anda akan diarahkan ke halaman login aplikasi.
+Gunakan kredensial berikut untuk masuk:
+Username: admin
+Password: admin
+Setelah login berhasil, Anda dapat mulai menggunakan aplikasi.
+
+Langkah 5: Konfigurasi Koneksi Database
+Buka file konek.php yang terletak di D:\xampp\htdocs\simpelarsip\assets\configuration menggunakan editor teks seperti Notepad++.
+Sesuaikan pengaturan koneksi database sesuai kebutuhan Anda. Berikut adalah contoh pengaturan default untuk XAMPP:
+
+<?php
+define('host', 'localhost');
+define('username', 'root');
+define('password', '');
+define('db_name', 'arsipsimple');
+
+$konek = NEW mysqli(host, username, password, db_name) or die(mysqli_error());
+?>
+
+Jika Anda ingin menghubungkan aplikasi ke database online atau berbeda, ubah nilai-nilai konstanta sesuai dengan pengaturan database Anda.
+Pastikan Anda menyimpan perubahan dan menguji koneksi untuk memastikan aplikasi dapat berfungsi dengan baik.
+
+Dengan mengikuti langkah-langkah di atas, Anda seharusnya dapat membuat dan mengonfigurasi aplikasi Sistem Arsip Surat Sederhana Berbasis PHP untuk penggunaan lokal di XAMPP dan juga untuk penggunaan online dengan penyesuaian yang sesuai.
