@@ -17,7 +17,7 @@ if (empty($_SESSION['username'])) {
               <div class="content p-4">
                 <div class="box-header">
                   <h3 class="box-title">Data Surat Masuk</h3>
-                </div><!-- /.box-header -->
+                </div>
                 <div class="row">
                   <div class="col-md-4">
                     <form action="" method="get">
@@ -26,13 +26,18 @@ if (empty($_SESSION['username'])) {
                   </div>
                   <div class="col-md-8">
                     <div class="d-flex flex-row-reverse bd-highlight">
-                      <button data-toggle="modal" data-target="#MyMod" class="btn btn-success"> Tambah Surat Masuk </button>
+                      <?php
+                      if ($_SESSION['level'] == 'admin') {
+                        echo "<button data-toggle='modal' data-target='#MyMod' class='btn btn-success'> Tambah Surat Masuk </button>";
+                      }
+                      ?>
                       <a href="../tpl/print1.php" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>
                 <div class="box-body table-responsive">
                   <?php
+                  // Hapus data jika ada
                   if (isset($_GET['hapussumas'])) {
                     $idhps = $_GET['hapussumas'];
                     $queryhps = "DELETE FROM surat_masuk WHERE kd_sumas='$idhps'";
@@ -52,6 +57,23 @@ if (empty($_SESSION['username'])) {
                     }
                   }
                   ?>
+
+                  <?php
+                  $jumlahDataPerHalaman = 10;
+
+                  $result = mysqli_query($konek, "SELECT COUNT(*) AS total FROM surat_masuk");
+                  $totalData = mysqli_fetch_assoc($result)['total'];
+                  $totalHalaman = ceil($totalData / $jumlahDataPerHalaman);
+                  $halamanAktif = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                  $awalData = ($halamanAktif - 1) * $jumlahDataPerHalaman;
+                  if (isset($_GET['cari'])) {
+                    $cari = $_GET['cari'];
+                    $query = mysqli_query($konek, "SELECT * FROM surat_masuk WHERE kd_sumas LIKE '%$cari%' LIMIT $awalData, $jumlahDataPerHalaman");
+                  } else {
+                    $query = mysqli_query($konek, "SELECT * FROM surat_masuk LIMIT $awalData, $jumlahDataPerHalaman");
+                  }
+                  ?>
+
                   <form action="" method="get">
                     <table class="table table-bordered table-striped">
                       <thead>
@@ -65,76 +87,71 @@ if (empty($_SESSION['username'])) {
                           <th>Aksi</th>
                         </tr>
                       </thead>
-                      <?php
-                      if (isset($_GET['cari'])) {
-                        $cari = $_GET['cari'];
-                        $data = "SELECT * FROM surat_masuk WHERE kd_sumas LIKE '%" . $cari . "%'";
-                        $data1 = $konek->query($data);
-                        $p = mysqli_fetch_array($data1);
-                        if ($p == TRUE) {
-                      ?>
-                          <tbody>
+                      <tbody>
+                        <?php
+                        if (mysqli_num_rows($query) > 0) {
+                          while ($t = mysqli_fetch_array($query)) {
+                        ?>
                             <tr>
-                              <td><?php echo $p['1']; ?></td>
-                              <td><?php echo $p['2']; ?></td>
-                              <td><?php echo $p['3']; ?></td>
-                              <td><?php echo $p['4']; ?></td>
-                              <td><?php echo $p['5']; ?></td>
-                              <td><?php echo $p['6']; ?></td>
-                              <td>
-                                <a href="detailsumas.php?details=<?= $t['1'] ?>" style="text-decoration: none;" class="text-success">
+                              <td><?= $t['kd_sumas']; ?></td>
+                              <td><?= $t['no_sumas']; ?></td>
+                              <td><?= $t['tgl_sumas']; ?></td>
+                              <td><?= $t['tgl_sumasdtg']; ?></td>
+                              <td><?= $t['judul']; ?></td>
+                              <td><?= $t['isi']; ?></td>
+                              <td align="center">
+                                <a href="detailsumas.php?details=<?= $t['kd_sumas'] ?>" style="text-decoration: none;" class="text-success">
                                   <i class="bi bi-info"></i>
                                 </a>
-                                <a style="text-decoration: none;" class="text-dark" href="../tpl/printsumas.php?print=<?php echo $t['1']; ?>">
-                                  <i class="bi bi-printer"></i>
-                                </a>
-
-                                <a style="text-decoration: none;" class="text-danger" href="?hapussumas=<?php echo $t['0']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
-                                  <i class="bi bi-trash"></i>
-                                </a>
+                                <?php
+                                if ($_SESSION['level'] == 'admin') {
+                                ?>
+                                  <a style="text-decoration: none;" class="text-primary" href="editsumas.php?id=<?php echo $t['kd_sumas']; ?>">
+                                    <i class="bi bi-pencil-square"></i>
+                                  </a>
+                                  <a style="text-decoration: none;" class="text-danger" href="?hapussumas=<?php echo $t['kd_sumas']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
+                                    <i class="bi bi-trash"></i>
+                                  </a>
+                                <?php
+                                }
+                                ?>
                               </td>
                             </tr>
-                          </tbody>
-                        <?php
+                          <?php
+                          }
                         } else {
-                        ?>
+                          ?>
                           <tr>
                             <td align="center" colspan="7">Data tidak ditemukan.</td>
                           </tr>
                         <?php
                         }
-                      } else {
-                        $query = mysqli_query($konek, "SELECT * FROM surat_masuk");
-                        while ($t = mysqli_fetch_array($query)) {
                         ?>
-                          <tbody>
-                            <tr>
-                              <td><?php echo $t['1']; ?></td>
-                              <td><?php echo $t['2']; ?></td>
-                              <td><?php echo $t['3']; ?></td>
-                              <td><?php echo $t['4']; ?></td>
-                              <td><?php echo $t['5']; ?></td>
-                              <td><?php echo $t['6']; ?></td>
-                              <td>
-                                <a href="detailsumas.php?details=<?= $t['1'] ?>" style="text-decoration: none;" class="text-success">
-                                  <i class="bi bi-info"></i>
-                                </a>
-                                <a style="text-decoration: none;" class="text-dark" href="../tpl/printsumas.php?print=<?php echo $t['1']; ?>">
-                                  <i class="bi bi-printer"></i>
-                                </a>
-
-                                <a style="text-decoration: none;" class="text-danger" href="?hapussumas=<?php echo $t['1']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
-                                  <i class="bi bi-trash"></i>
-                                </a>
-                              </td>
-                            </tr>
-                          </tbody>
-                      <?php
-                        }
-                      }
-                      ?>
+                      </tbody>
                     </table>
                   </form>
+
+                  <!-- Pagination -->
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                      <!-- Tombol Previous -->
+                      <li class="page-item <?= ($halamanAktif <= 1) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?page=<?= ($halamanAktif > 1) ? $halamanAktif - 1 : 1; ?>">Previous</a>
+                      </li>
+
+                      <!-- Nomor Halaman -->
+                      <?php for ($i = 1; $i <= $totalHalaman; $i++) : ?>
+                        <li class="page-item <?= ($i == $halamanAktif) ? 'active' : ''; ?>">
+                          <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+                        </li>
+                      <?php endfor; ?>
+
+                      <!-- Tombol Next -->
+                      <li class="page-item <?= ($halamanAktif >= $totalHalaman) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?page=<?= ($halamanAktif < $totalHalaman) ? $halamanAktif + 1 : $totalHalaman; ?>">Next</a>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               </div>
             </div>

@@ -16,7 +16,7 @@
                                 <div class="inner p-4">
                                     <h6 class="text-light">Selamat datang </h6>
                                     <h5 class="text-light"><?php echo strtoupper($_SESSION['username']) ?></h5>
-                                    <h6 class="text-light mt-5">PKLK | MailTrack</h6>
+                                    <h6 class="text-light mt-5"> Anda Login Sebagai <?= ucfirst($_SESSION['level']) ?>  PKLK | MailTrack</h6>
                                 </div>
                             </div>
                         </div>

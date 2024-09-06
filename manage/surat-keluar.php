@@ -4,7 +4,20 @@ session_start();
 if (empty($_SESSION['username'])) {
   header("Location: ../manage/index.php");
 }
+
+// Set jumlah data per halaman
+$limit = 10;
+
+// Dapatkan halaman saat ini dari URL, jika tidak ada, default ke halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Hitung total data di tabel surat_keluar
+$totalQuery = mysqli_query($konek, "SELECT COUNT(*) as total FROM surat_keluar");
+$totalData = mysqli_fetch_assoc($totalQuery)['total'];
+$totalPages = ceil($totalData / $limit);
 ?>
+
 <div class="app-wrapper">
   <?php require_once('../tpl/header.php'); ?>
   <?php require_once('../tpl/sidebar.php'); ?>
@@ -26,13 +39,18 @@ if (empty($_SESSION['username'])) {
                   </div>
                   <div class="col-md-8">
                     <div class="d-flex flex-row-reverse bd-highlight">
-                      <button data-toggle="modal" data-target="#MyLose" class="btn btn-success"> Tambah Surat Keluar </button>
+                      <?php
+                      if ($_SESSION['level'] == 'admin') {
+                        echo "<button data-toggle='modal' data-target='#MyLose' class='btn btn-success'> Tambah Surat Keluar </button>";
+                      }
+                      ?>
                       <a href="../tpl/print1.php" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>
                 <div class="box-body table-responsive">
                   <?php
+                  // Hapus data jika ada permintaan hapus
                   if (isset($_GET['hapussukel'])) {
                     $idhps = $_GET['hapussukel'];
                     $queryhps = "DELETE FROM surat_keluar WHERE kd_sukel='$idhps'";
@@ -59,21 +77,20 @@ if (empty($_SESSION['username'])) {
                           <th>Kode Surat</th>
                           <th>No Surat</th>
                           <th>Tgl Surat</th>
-                          <th>instansi</th>
-                          <th>judul surat</th>
+                          <th>Instansi</th>
+                          <th>Judul Surat</th>
                           <th>Isi</th>
                           <th>Aksi</th>
                         </tr>
                       </thead>
-                      <?php
-                      if (isset($_GET['cari'])) {
-                        $cari = $_GET['cari'];
-                        $data = "SELECT * FROM surat_keluar WHERE kd_sukel LIKE '%" . $cari . "%'";
-                        $data1 = $konek->query($data);
-                        $p = mysqli_fetch_array($data1);
-                        if ($p == TRUE) {
-                      ?>
-                          <tbody>
+                      <tbody>
+                        <?php
+                        if (isset($_GET['cari'])) {
+                          $cari = $_GET['cari'];
+                          $data = "SELECT * FROM surat_keluar WHERE kd_sukel LIKE '%" . $cari . "%' LIMIT $limit OFFSET $offset";
+                          $data1 = $konek->query($data);
+                          while ($p = mysqli_fetch_array($data1)) {
+                        ?>
                             <tr>
                               <td><?php echo $p['1']; ?></td>
                               <td><?php echo $p['2']; ?></td>
@@ -81,33 +98,26 @@ if (empty($_SESSION['username'])) {
                               <td><?php echo $p['4']; ?></td>
                               <td><?php echo $p['5']; ?></td>
                               <td><?php echo $p['6']; ?></td>
-                              <td>
-                                <a href="detailsukel.php?details=<?= $t['1'] ?>" style="text-decoration: none;" class="text-success">
+                              <td align="center">
+                                <a href="detailsukel.php?details=<?= $p['1'] ?>" class="text-success">
                                   <i class="bi bi-info"></i>
                                 </a>
-                                <a style="text-decoration: none;" class="text-dark" href="../tpl/printsukel.php?print=<?php echo $t['1']; ?>">
-                                  <i class="bi bi-printer"></i>
-                                </a>
-
-                                <a style="text-decoration: none;" class="text-danger" href="?hapussukel=<?php echo $t['0']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
-                                  <i class="bi bi-trash"></i>
-                                </a>
+                                <?php if ($_SESSION['level'] == 'admin') { ?>
+                                  <a href="editsukel.php?id=<?= $p['1'] ?>" class="text-dark">
+                                    <i class="bi bi-pencil-square"></i>
+                                  </a>
+                                  <a href="?hapussukel=<?= $p['1'] ?>" class="text-danger" onclick="return confirm('Yakin data akan dihapus ?');">
+                                    <i class="bi bi-trash"></i>
+                                  </a>
+                                <?php } ?>
                               </td>
                             </tr>
-                          </tbody>
-                        <?php
+                          <?php
+                          }
                         } else {
-                        ?>
-                          <tr>
-                            <td align="center" colspan="7">Data tidak ditemukan.</td>
-                          </tr>
-                        <?php
-                        }
-                      } else {
-                        $query = mysqli_query($konek, "select * from surat_keluar");
-                        while ($t = mysqli_fetch_array($query)) {
-                        ?>
-                          <tbody>
+                          $query = mysqli_query($konek, "SELECT * FROM surat_keluar LIMIT $limit OFFSET $offset");
+                          while ($t = mysqli_fetch_array($query)) {
+                          ?>
                             <tr>
                               <td><?php echo $t['1']; ?></td>
                               <td><?php echo $t['2']; ?></td>
@@ -115,26 +125,53 @@ if (empty($_SESSION['username'])) {
                               <td><?php echo $t['4']; ?></td>
                               <td><?php echo $t['5']; ?></td>
                               <td><?php echo $t['6']; ?></td>
-                              <td>
-                                <a href="detailsukel.php?details=<?= $t['1'] ?>" style="text-decoration: none;" class="text-success">
+                              <td align="center">
+                                <a href="detailsukel.php?details=<?= $t['1'] ?>" class="text-success" style="text-decoration: none;">
                                   <i class="bi bi-info"></i>
                                 </a>
-                                <a style="text-decoration: none;" class="text-dark" href="../tpl/printsukel.php?print=<?php echo $t['1']; ?>">
-                                  <i class="bi bi-printer"></i>
-                                </a>
-
-                                <a style="text-decoration: none;" class="text-danger" href="?hapussukel=<?php echo $t['1']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
-                                  <i class="bi bi-trash"></i>
-                                </a>
+                                <?php if ($_SESSION['level'] == 'admin') { ?>
+                                  <a href="editsukel.php?id=<?= $t['1'] ?>" class="text-primary" style="text-decoration: none;">
+                                    <i class="bi bi-pencil-square"></i>
+                                  </a>
+                                  <a href="?hapussukel=<?= $t['1'] ?>" class="text-danger" onclick="return confirm('Yakin data akan dihapus ?');">
+                                    <i class="bi bi-trash"></i>
+                                  </a>
+                                <?php } ?>
                               </td>
                             </tr>
-                          </tbody>
-                      <?php
+                        <?php
+                          }
                         }
-                      }
-                      ?>
+                        ?>
+                      </tbody>
                     </table>
                   </form>
+                  <!-- Pagination -->
+                  <!-- Pagination -->
+
+                  <!-- Pagination -->
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                      <!-- Tombol Previous -->
+                      <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?page=<?= ($page > 1) ? $page - 1 : 1; ?>">Previous</a>
+                      </li>
+
+                      <!-- Nomor Halaman -->
+                      <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                        <li class="page-item <?= ($i == $page) ? 'active' : ''; ?>">
+                          <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+                        </li>
+                      <?php endfor; ?>
+
+                      <!-- Tombol Next -->
+                      <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?page=<?= ($page < $totalPages) ? $page + 1 : $totalPages; ?>">Next</a>
+                      </li>
+                    </ul>
+                  </nav>
+
+
                 </div>
               </div>
             </div>

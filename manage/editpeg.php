@@ -20,13 +20,24 @@ if (isset($_POST['edit'])) {
   $telppeg1 = $_POST['telppeg'];
   $kelaminpeg1 = $_POST['kelaminpeg'];
   $levelpeg1 = $_POST['levelpeg'];
-  $userpeg1 = $_POST['userpeg'];
-  $passpeg1 = $_POST['passpeg'];
 
-  // Upload file
-  $target_dir = "upload/";
-  $target_file = $target_dir . basename($_FILES['photopeg']['name']);
-  move_uploaded_file($_FILES['photopeg']['tmp_name'], $target_file);
+
+  $pegawai = mysqli_query($konek, "SELECT * FROM pegawai WHERE no_peg='$user1' LIMIT 1");
+  $check = mysqli_fetch_array($pegawai);
+  if (!empty($_FILES['photopeg']['name'])) {
+    $target_dir = "upload/";
+    $target_file = $target_dir . basename($_FILES['photopeg']['name']);
+
+    if (!empty($check['photo']) && file_exists($check['photo'])) {
+      unlink($check['photo']);
+    }
+
+    if (move_uploaded_file($_FILES['photopeg']['tmp_name'], $target_file)) {
+      $updateImage = mysqli_query($konek, "UPDATE pegawai SET photo='$target_file' WHERE no_peg='$user1'");
+    } else {
+      echo "<script>alert('Gagal mengupload file!')</script>";
+    }
+  }
 
   // Update data di database
   $perintah3 = mysqli_query($konek, "UPDATE pegawai SET 
@@ -35,10 +46,7 @@ if (isset($_POST['edit'])) {
       alamat='$alamatpeg1', 
       no_telp='$telppeg1', 
       jns_kelamin='$kelaminpeg1', 
-      level='$levelpeg1', 
-      username='$userpeg1', 
-      password='$passpeg1', 
-      photo='$target_file' 
+      level='$levelpeg1'
       WHERE no_peg='$user1'");
 
   if ($perintah3) {
@@ -91,10 +99,6 @@ if (isset($_POST['edit'])) {
                             <option value="perempuan" <?= ($tam['jns_kelamin'] == 'perempuan') ? 'selected' : '' ?>>Perempuan</option>
                           </select>
                         </div>
-                        <div class="form-group">
-                          <label for="">Username</label>
-                          <input class="form-control" type="text" name="userpeg" id="" value="<?= $tam['username'] ?>">
-                        </div>
                       </div>
                       <div class="col-md-6">
                         <div class="form-group">
@@ -111,10 +115,6 @@ if (isset($_POST['edit'])) {
                             <option value="admin" <?= ($tam['level'] == 'admin') ? 'selected' : '' ?>>Admin</option>
                             <option value="user" <?= ($tam['level'] == 'user') ? 'selected' : '' ?>>User</option>
                           </select>
-                        </div>
-                        <div class="form-group">
-                          <label for="">Password</label>
-                          <input class="form-control" type="password" name="passpeg" id="" value="<?= $tam['password'] ?>">
                         </div>
                       </div>
                     </div>
