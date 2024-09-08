@@ -75,6 +75,7 @@ if (mysqli_num_rows($quer2) > 0) {
                 $_SESSION['username'] = $username;
                 $_SESSION['level'] = $coba['level'];
                 $_SESSION['no_peg'] = $coba['no_peg'];
+                $_SESSION['photo'] = $coba['photo'];
                 header("Location: manage/index.php");
               } else {
             ?><center>

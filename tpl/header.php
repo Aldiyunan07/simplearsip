@@ -27,7 +27,7 @@ require_once '../assets/configuration/konek.php';
     <nav class="app-header navbar navbar-expand bg-body"> <!--begin::Container-->
         <div class="container-fluid"> <!--begin::Start Navbar Links-->
             <ul class="navbar-nav ms-auto"> <!--begin::Navbar Search-->
-                <li class="nav-item dropdown user-menu"> <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"> <span class="d-none d-md-inline"><?php echo ucfirst($_SESSION['username']); ?></span> </a>
+                <li class="nav-item dropdown user-menu"> <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"> <img src="<?= $_SESSION['photo'] ?>" class="rounded-circle me-2" width="30" height="30" alt=""> <span class="d-none d-md-inline"><?php echo ucfirst($_SESSION['username']); ?></span> </a>
                     <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end"> <!--begin::User Image-->
                         <li class="user-body"> <!--begin::Row-->
                             <div class="row">

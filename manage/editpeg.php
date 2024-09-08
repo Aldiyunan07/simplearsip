@@ -20,6 +20,8 @@ if (isset($_POST['edit'])) {
   $telppeg1 = $_POST['telppeg'];
   $kelaminpeg1 = $_POST['kelaminpeg'];
   $levelpeg1 = $_POST['levelpeg'];
+  $nip = $_POST['nip'];
+  $golongan = $_POST['golongan'];
 
 
   $pegawai = mysqli_query($konek, "SELECT * FROM pegawai WHERE no_peg='$user1' LIMIT 1");
@@ -43,7 +45,9 @@ if (isset($_POST['edit'])) {
   $perintah3 = mysqli_query($konek, "UPDATE pegawai SET 
       nama_peg='$namapeg1', 
       jabatan='$jabpeg1', 
-      alamat='$alamatpeg1', 
+      alamat='$alamatpeg1',
+      nip = '$nip',
+      golongan = '$golongan',
       no_telp='$telppeg1', 
       jns_kelamin='$kelaminpeg1', 
       level='$levelpeg1'
@@ -85,8 +89,12 @@ if (isset($_POST['edit'])) {
                       <div class="col-md-6">
                         <div class="form-group">
                           <input type="hidden" name="nopeg" value="<?= $tam['no_peg'] ?>">
-                          <label for="">Nama Pegawai</label>
-                          <input class="form-control" type="text" name="namapeg" id="" value="<?= $tam['nama_peg'] ?>">
+                          <label for="">Nomor Induk Pegawai</label>
+                          <input class="form-control" type="text" name="nip" id="" value="<?= $tam['nip'] ?>">
+                        </div>
+                        <div class="form-group">
+                          <label for="">Golongan </label>
+                          <input class="form-control" type="text" name="golongan" id="" value="<?= $tam['golongan'] ?>">
                         </div>
                         <div class="form-group">
                           <label for="">Alamat</label>
@@ -101,6 +109,10 @@ if (isset($_POST['edit'])) {
                         </div>
                       </div>
                       <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="">Nama Pegawai</label>
+                          <input class="form-control" type="text" name="namapeg" id="" value="<?= $tam['nama_peg'] ?>">
+                        </div>
                         <div class="form-group">
                           <label for="">Jabatan</label>
                           <input class="form-control" type="text" name="jabpeg" id="" value="<?= $tam['jabatan'] ?>">

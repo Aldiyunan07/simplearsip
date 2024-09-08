@@ -4,18 +4,6 @@ session_start();
 if (empty($_SESSION['username'])) {
   header("Location: ../manage/index.php");
 }
-
-// Set jumlah data per halaman
-$limit = 10;
-
-// Dapatkan halaman saat ini dari URL, jika tidak ada, default ke halaman 1
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
-
-// Hitung total data di tabel surat_keluar
-$totalQuery = mysqli_query($konek, "SELECT COUNT(*) as total FROM surat_keluar");
-$totalData = mysqli_fetch_assoc($totalQuery)['total'];
-$totalPages = ceil($totalData / $limit);
 ?>
 
 <div class="app-wrapper">
@@ -32,12 +20,20 @@ $totalPages = ceil($totalData / $limit);
                   <h3 class="box-title">Data Surat Keluar</h3>
                 </div><!-- /.box-header -->
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-5">
                     <form action="" method="get">
-                      <input type="text" class="form-control" name="cari" placeholder="Cari data berdasarkan Kode Sukel...">
+                      <div class="d-flex flex-row-reverse bd-highlight">
+                        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+                        <select style="width: 15%;" name="limit" class="form-control me-2">
+                          <option value="10" <?= isset($_GET['limit']) && $_GET['limit'] == 10 ? 'selected' : '' ?>>10</option>
+                          <option value="25" <?= isset($_GET['limit']) && $_GET['limit'] == 25 ? 'selected' : '' ?>>25</option>
+                          <option value="50" <?= isset($_GET['limit']) && $_GET['limit'] == 50 ? 'selected' : '' ?>>50</option>
+                        </select>
+                        <input type="text" class="form-control me-2" name="cari" placeholder="Cari data berdasarkan Instansi..." value="<?= isset($_GET['cari']) ? $_GET['cari'] : '' ?>">
+                      </div>
                     </form>
                   </div>
-                  <div class="col-md-8">
+                  <div class="col-md-7">
                     <div class="d-flex flex-row-reverse bd-highlight">
                       <?php
                       if ($_SESSION['level'] == 'admin') {
@@ -85,68 +81,58 @@ $totalPages = ceil($totalData / $limit);
                       </thead>
                       <tbody>
                         <?php
-                        if (isset($_GET['cari'])) {
-                          $cari = $_GET['cari'];
-                          $data = "SELECT * FROM surat_keluar WHERE kd_sukel LIKE '%" . $cari . "%' LIMIT $limit OFFSET $offset";
-                          $data1 = $konek->query($data);
-                          while ($p = mysqli_fetch_array($data1)) {
-                        ?>
-                            <tr>
-                              <td><?php echo $p['1']; ?></td>
-                              <td><?php echo $p['2']; ?></td>
-                              <td><?php echo $p['3']; ?></td>
-                              <td><?php echo $p['4']; ?></td>
-                              <td><?php echo $p['5']; ?></td>
-                              <td><?php echo $p['6']; ?></td>
-                              <td align="center">
-                                <a href="detailsukel.php?details=<?= $p['1'] ?>" class="text-success">
-                                  <i class="bi bi-info"></i>
-                                </a>
-                                <?php if ($_SESSION['level'] == 'admin') { ?>
-                                  <a href="editsukel.php?id=<?= $p['1'] ?>" class="text-dark">
-                                    <i class="bi bi-pencil-square"></i>
-                                  </a>
-                                  <a href="?hapussukel=<?= $p['1'] ?>" class="text-danger" onclick="return confirm('Yakin data akan dihapus ?');">
-                                    <i class="bi bi-trash"></i>
-                                  </a>
-                                <?php } ?>
-                              </td>
-                            </tr>
-                          <?php
-                          }
-                        } else {
-                          $query = mysqli_query($konek, "SELECT * FROM surat_keluar LIMIT $limit OFFSET $offset");
-                          while ($t = mysqli_fetch_array($query)) {
-                          ?>
-                            <tr>
-                              <td><?php echo $t['1']; ?></td>
-                              <td><?php echo $t['2']; ?></td>
-                              <td><?php echo $t['3']; ?></td>
-                              <td><?php echo $t['4']; ?></td>
-                              <td><?php echo $t['5']; ?></td>
-                              <td><?php echo $t['6']; ?></td>
-                              <td align="center">
-                                <a href="detailsukel.php?details=<?= $t['1'] ?>" class="text-success" style="text-decoration: none;">
-                                  <i class="bi bi-info"></i>
-                                </a>
-                                <?php if ($_SESSION['level'] == 'admin') { ?>
-                                  <a href="editsukel.php?id=<?= $t['1'] ?>" class="text-primary" style="text-decoration: none;">
-                                    <i class="bi bi-pencil-square"></i>
-                                  </a>
-                                  <a href="?hapussukel=<?= $t['1'] ?>" class="text-danger" onclick="return confirm('Yakin data akan dihapus ?');">
-                                    <i class="bi bi-trash"></i>
-                                  </a>
-                                <?php } ?>
-                              </td>
-                            </tr>
-                        <?php
-                          }
+                        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+                        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                        $cari = isset($_GET['cari']) ? $_GET['cari'] : '';
+
+                        $queryCount = "SELECT COUNT(*) AS total FROM surat_keluar";
+                        if (!empty($cari)) {
+                          $queryCount .= " WHERE instansi LIKE '%$cari%'";
                         }
+                        $result = mysqli_query($konek, $queryCount);
+                        $totalData = mysqli_fetch_assoc($result)['total'];
+
+                        $totalPages = ceil($totalData / $limit);
+                        $offset = ($page - 1) * $limit;
+
+                        $query = "SELECT * FROM surat_keluar";
+                        if (!empty($cari)) {
+                          $query .= " WHERE instansi LIKE '%$cari%'";
+                        }
+                        $query .= " LIMIT $offset, $limit";
+                        $result = mysqli_query($konek, $query);
+                        ?>
+                        <?php
+                        while ($t = mysqli_fetch_array($result)) {
+                        ?>
+                          <tr>
+                            <td><?php echo $t['1']; ?></td>
+                            <td><?php echo $t['2']; ?></td>
+                            <td><?php echo $t['3']; ?></td>
+                            <td><?php echo $t['4']; ?></td>
+                            <td><?php echo $t['5']; ?></td>
+                            <td><?php echo $t['6']; ?></td>
+                            <td align="center">
+                              <a href="detailsukel.php?details=<?= $t['1'] ?>" class="text-success" style="text-decoration: none;">
+                                <i class="bi bi-info"></i>
+                              </a>
+                              <?php if ($_SESSION['level'] == 'admin') { ?>
+                                <a href="editsukel.php?id=<?= $t['1'] ?>" class="text-primary" style="text-decoration: none;">
+                                  <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="?hapussukel=<?= $t['1'] ?>" class="text-danger" onclick="return confirm('Yakin data akan dihapus ?');">
+                                  <i class="bi bi-trash"></i>
+                                </a>
+                              <?php } ?>
+                            </td>
+                          </tr>
+                        <?php
+                        }
+
                         ?>
                       </tbody>
                     </table>
                   </form>
-                  <!-- Pagination -->
                   <!-- Pagination -->
 
                   <!-- Pagination -->
@@ -196,8 +182,7 @@ $totalPages = ceil($totalData / $limit);
           //kode otomatis
           $que6 = $konek->query("select max(kd_sukel) as maxKd from surat_keluar");
           $data6  = mysqli_fetch_array($que6);
-          $noSur6 = $data6['maxKd'];
-
+          $noSur6 = $data6['maxKd'] ?? 0;
           $noUrut6 = (int) substr($noSur6, 6, 6);
           $noUrut6++;
 
@@ -206,17 +191,17 @@ $totalPages = ceil($totalData / $limit);
           ?>
           <div class="form-group">
             <label>Kode Surat :</label>
-            <input class="form-control" type="text" name="kdsukel" value="<?php echo $newKD3 ?>" readonly />
+            <input class="form-control mb-2" type="text" name="kdsukel" value="<?php echo $newKD3 ?>" readonly />
             <label>No Surat :</label>
-            <input class="form-control" type="text" name="nosukel" value="" />
+            <input class="form-control mb-2" type="text" name="nosukel" value="" autocomplete="off" />
             <label>Nama Instansi :</label>
-            <input class="form-control" type="text" name="instansisukel" placeholder="masukan nama pengirim/lembaga yang dituju" />
+            <input class="form-control mb-2" type="text" name="instansisukel" placeholder="Masukan nama pengirim/lembaga yang dituju" autocomplete="off" />
             <label>Tanggal Surat :</label>
-            <input class="form-control" type="text" id="tanggal4" name="tglsukel" placeholder="tanggal pada surat" />
+            <input class="form-control mb-2" type="text" id="tanggal4" name="tglsukel" autocomplete="off" placeholder="Tanggal pada surat" />
             <label>Subject :</label>
-            <input class="form-control" type="text" name="judulsukel" placeholder="masukan subject" />
+            <input class="form-control mb-2" type="text" name="judulsukel" placeholder="Masukan subject" autocomplete="off" />
             <label>Keterangan :</label>
-            <textarea class="form-control" type="text" name="isisukel" placeholder="masukan keterangan surat ( jika ada )"></textarea>
+            <textarea class="form-control mb-2" type="text" name="isisukel" placeholder="Masukan keterangan surat ( jika ada )"></textarea>
             <label>Pilih File :</label>
             <input type="file" name="filesukel" />
           </div>

@@ -19,12 +19,20 @@ if (empty($_SESSION['username'])) {
                   <h3 class="box-title">Data Surat Masuk</h3>
                 </div>
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-5">
                     <form action="" method="get">
-                      <input type="text" class="form-control" name="cari" placeholder="Cari data berdasarkan Kode Sumas...">
+                      <div class="d-flex flex-row-reverse bd-highlight">
+                        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+                        <select style="width: 15%;" name="limit" class="form-control me-2">
+                          <option value="10" <?= isset($_GET['limit']) && $_GET['limit'] == 10 ? 'selected' : '' ?>>10</option>
+                          <option value="25" <?= isset($_GET['limit']) && $_GET['limit'] == 25 ? 'selected' : '' ?>>25</option>
+                          <option value="50" <?= isset($_GET['limit']) && $_GET['limit'] == 50 ? 'selected' : '' ?>>50</option>
+                        </select>
+                        <input type="text" class="form-control me-2" name="cari" placeholder="Cari data berdasarkan Instansi..." value="<?= isset($_GET['cari']) ? $_GET['cari'] : '' ?>">
+                      </div>
                     </form>
                   </div>
-                  <div class="col-md-8">
+                  <div class="col-md-7">
                     <div class="d-flex flex-row-reverse bd-highlight">
                       <?php
                       if ($_SESSION['level'] == 'admin') {
@@ -59,19 +67,26 @@ if (empty($_SESSION['username'])) {
                   ?>
 
                   <?php
-                  $jumlahDataPerHalaman = 10;
+                  $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+                  $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                  $cari = isset($_GET['cari']) ? $_GET['cari'] : '';
 
-                  $result = mysqli_query($konek, "SELECT COUNT(*) AS total FROM surat_masuk");
-                  $totalData = mysqli_fetch_assoc($result)['total'];
-                  $totalHalaman = ceil($totalData / $jumlahDataPerHalaman);
-                  $halamanAktif = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-                  $awalData = ($halamanAktif - 1) * $jumlahDataPerHalaman;
-                  if (isset($_GET['cari'])) {
-                    $cari = $_GET['cari'];
-                    $query = mysqli_query($konek, "SELECT * FROM surat_masuk WHERE kd_sumas LIKE '%$cari%' LIMIT $awalData, $jumlahDataPerHalaman");
-                  } else {
-                    $query = mysqli_query($konek, "SELECT * FROM surat_masuk LIMIT $awalData, $jumlahDataPerHalaman");
+                  $queryCount = "SELECT COUNT(*) AS total FROM surat_masuk";
+                  if (!empty($cari)) {
+                    $queryCount .= " WHERE instansi LIKE '%$cari%'";
                   }
+                  $result = mysqli_query($konek, $queryCount);
+                  $totalData = mysqli_fetch_assoc($result)['total'];
+
+                  $totalPages = ceil($totalData / $limit);
+                  $offset = ($page - 1) * $limit;
+
+                  $query = "SELECT * FROM surat_masuk";
+                  if (!empty($cari)) {
+                    $query .= " WHERE instansi LIKE '%$cari%'";
+                  }
+                  $query .= " LIMIT $offset, $limit";
+                  $result = mysqli_query($konek, $query);
                   ?>
 
                   <form action="" method="get">
@@ -80,8 +95,8 @@ if (empty($_SESSION['username'])) {
                         <tr>
                           <th>Kode Surat</th>
                           <th>No Surat</th>
-                          <th>Tgl Surat</th>
                           <th>Tgl Surat Datang</th>
+                          <th>Instansi</th>
                           <th>Judul Surat</th>
                           <th>Isi</th>
                           <th>Aksi</th>
@@ -89,14 +104,14 @@ if (empty($_SESSION['username'])) {
                       </thead>
                       <tbody>
                         <?php
-                        if (mysqli_num_rows($query) > 0) {
-                          while ($t = mysqli_fetch_array($query)) {
+                        if (mysqli_num_rows($result) > 0) {
+                          while ($t = mysqli_fetch_array($result)) {
                         ?>
                             <tr>
                               <td><?= $t['kd_sumas']; ?></td>
                               <td><?= $t['no_sumas']; ?></td>
-                              <td><?= $t['tgl_sumas']; ?></td>
                               <td><?= $t['tgl_sumasdtg']; ?></td>
+                              <td><?= $t['instansi']; ?></td>
                               <td><?= $t['judul']; ?></td>
                               <td><?= $t['isi']; ?></td>
                               <td align="center">
@@ -106,10 +121,10 @@ if (empty($_SESSION['username'])) {
                                 <?php
                                 if ($_SESSION['level'] == 'admin') {
                                 ?>
-                                  <a style="text-decoration: none;" class="text-primary" href="editsumas.php?id=<?php echo $t['kd_sumas']; ?>">
+                                  <a style="text-decoration: none;" class="text-primary" href="editsumas.php?id=<?= $t['kd_sumas']; ?>">
                                     <i class="bi bi-pencil-square"></i>
                                   </a>
-                                  <a style="text-decoration: none;" class="text-danger" href="?hapussumas=<?php echo $t['kd_sumas']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
+                                  <a style="text-decoration: none;" class="text-danger" href="?hapussumas=<?= $t['kd_sumas']; ?>" onclick="return confirm('Yakin data akan dihapus ?');">
                                     <i class="bi bi-trash"></i>
                                   </a>
                                 <?php
@@ -135,20 +150,20 @@ if (empty($_SESSION['username'])) {
                   <nav aria-label="Page navigation">
                     <ul class="pagination">
                       <!-- Tombol Previous -->
-                      <li class="page-item <?= ($halamanAktif <= 1) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?page=<?= ($halamanAktif > 1) ? $halamanAktif - 1 : 1; ?>">Previous</a>
+                      <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= ($page > 1) ? $page - 1 : 1; ?>">Previous</a>
                       </li>
 
                       <!-- Nomor Halaman -->
-                      <?php for ($i = 1; $i <= $totalHalaman; $i++) : ?>
-                        <li class="page-item <?= ($i == $halamanAktif) ? 'active' : ''; ?>">
-                          <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+                      <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                        <li class="page-item <?= ($i == $page) ? 'active' : ''; ?>">
+                          <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= $i; ?>"><?= $i; ?></a>
                         </li>
                       <?php endfor; ?>
 
                       <!-- Tombol Next -->
-                      <li class="page-item <?= ($halamanAktif >= $totalHalaman) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?page=<?= ($halamanAktif < $totalHalaman) ? $halamanAktif + 1 : $totalHalaman; ?>">Next</a>
+                      <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= ($page < $totalPages) ? $page + 1 : $totalPages; ?>">Next</a>
                       </li>
                     </ul>
                   </nav>
@@ -161,6 +176,7 @@ if (empty($_SESSION['username'])) {
     </div>
   </main>
 </div>
+
 <!-- tampilan popup kirim surat -->
 <div id="myMod" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -176,7 +192,7 @@ if (empty($_SESSION['username'])) {
           //kode otomatis
           $que5 = $konek->query("select max(kd_sumas) as maxKd from surat_masuk");
           $data5  = mysqli_fetch_array($que5);
-          $noSur5 = $data5['maxKd'];
+          $noSur5 = $data5['maxKd'] ?? 0;
 
           $noUrut5 = (int) substr($noSur5, 6, 6);
           $noUrut5++;
@@ -186,17 +202,16 @@ if (empty($_SESSION['username'])) {
           ?>
           <div class="form-group">
             <label>Kode Surat :</label>
-            <input class="form-control" type="text" name="kdsur" value="<?php echo $newKD; ?>" readonly />
+            <input class="form-control mb-2" type="text" name="kdsur" value="<?php echo $newKD; ?>" readonly />
             <label>No Surat :</label>
-            <input class="form-control" type="text" name="nosur" value="" />
+            <input class="form-control mb-2" type="text" name="nosur" value="" autocomplete="off" />
             <label>Nama Instansi/pengirim :</label>
-            <input class="form-control" type="text" name="instansi" placeholder="masukan nama pengirim/lembaga" />
+            <input class="form-control mb-2" type="text" name="instansi" placeholder="Masukan nama pengirim/lembaga" autocomplete="off" />
             <label>Ditujukan kepada :</label>
-            <select class="form-control" name="penerima">
+            <select class="form-control mb-2" name="penerima">
               <?php
               $peg = mysqli_query($konek, "select * from pegawai");
               while ($peg1 = mysqli_fetch_array($peg)) {
-
               ?>
                 <option><?php echo $peg1['no_peg']; ?> (<?= $peg1['nama_peg']; ?>) </option>
               <?php
@@ -204,17 +219,17 @@ if (empty($_SESSION['username'])) {
               ?>
             </select>
             <label>Tanggal Surat :</label>
-            <input class="form-control" type="text" id="tanggal" name="tglsur" placeholder="tanggal pada surat" />
+            <input class="form-control mb-2" type="text" id="tanggal" name="tglsur" placeholder="Tanggal pada surat" autocomplete="off" />
             <label>Tanggal Diterima :</label>
-            <input class="form-control" type="text" id="tanggal3" name="tglsurdtg" placeholder="tanggal surat  diterima" />
+            <input class="form-control mb-2" type="text" id="tanggal3" name="tglsurdtg" placeholder="Tanggal surat  diterima" autocomplete="off" />
             <label>Jenis Surat:</label>
-            <input class="form-control" type="text" name="jnssur" value="" />
+            <input class="form-control mb-2" type="text" name="jnssur" value="" placeholder="Jenis Surat" autocomplete="off" />
             <label>Subject :</label>
-            <input class="form-control" type="text" name="judul" placeholder="masukan subject" />
+            <input class="form-control mb-2" type="text" name="judul" placeholder="Masukan subject" autocomplete="off" />
             <label>Keterangan :</label>
-            <textarea class="form-control" type="text" name="isi" placeholder="masukan keterangan surat ( jika ada )"></textarea>
+            <textarea class="form-control mb-2" type="text" name="isi" placeholder="Masukan keterangan surat ( jika ada )"></textarea>
             <label>Pilih File :</label>
-            <input type="file" name="filesumas" />
+            <input type="file" class="form-control" name="filesumas" />
           </div>
       </div>
       <div class="modal-footer">

@@ -5,9 +5,6 @@ if (empty($_SESSION['username'])) {
   header("Location: ../manage/index.php");
 }
 
-$limit = 10; // Jumlah data per halaman
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Halaman saat ini
-$offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
 ?>
 <div class="app-wrapper">
   <?php require_once('../tpl/header.php'); ?>
@@ -23,12 +20,20 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
                   <h3 class="box-title"> Disposisi Surat </h3>
                 </div>
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-5">
                     <form action="" method="get">
-                      <input type="text" class="form-control" name="cari" placeholder="Cari data berdasarkan No Disposisi...">
+                      <div class="d-flex flex-row-reverse bd-highlight">
+                        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+                        <select style="width: 15%;" name="limit" class="form-control me-2">
+                          <option value="10" <?= isset($_GET['limit']) && $_GET['limit'] == 10 ? 'selected' : '' ?>>10</option>
+                          <option value="25" <?= isset($_GET['limit']) && $_GET['limit'] == 25 ? 'selected' : '' ?>>25</option>
+                          <option value="50" <?= isset($_GET['limit']) && $_GET['limit'] == 50 ? 'selected' : '' ?>>50</option>
+                        </select>
+                        <input type="text" class="form-control me-2" name="cari" placeholder="Cari data berdasarkan No Disposisi..." value="<?= isset($_GET['cari']) ? $_GET['cari'] : '' ?>">
+                      </div>
                     </form>
                   </div>
-                  <div class="col-md-8">
+                  <div class="col-md-7">
                     <div class="d-flex flex-row-reverse bd-highlight">
                       <?php
                       if ($_SESSION['level'] == 'admin') {
@@ -77,56 +82,29 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
                         </tr>
                       </thead>
                       <?php
-                      // Untuk pencarian data
-                      if (isset($_GET['cari'])) {
-                        $cari = $_GET['cari'];
-                        $data = "SELECT * FROM disposisi WHERE no_disposisi LIKE '%" . $cari . "%' LIMIT $limit OFFSET $offset";
-                        $data1 = $konek->query($data);
-                        if (mysqli_num_rows($data1) > 0) {
-                          while ($p = mysqli_fetch_array($data1)) {
+                      $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+                      $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                      $cari = isset($_GET['cari']) ? $_GET['cari'] : '';
+
+                      $queryCount = "SELECT COUNT(*) AS total FROM disposisi";
+                      if (!empty($cari)) {
+                        $queryCount .= " WHERE no_disposisi LIKE '%$cari%'";
+                      }
+                      $result = mysqli_query($konek, $queryCount);
+                      $totalData = mysqli_fetch_assoc($result)['total'];
+
+                      $totalPages = ceil($totalData / $limit);
+                      $offset = ($page - 1) * $limit;
+
+                      $query = "SELECT * FROM disposisi";
+                      if (!empty($cari)) {
+                        $query .= " WHERE no_disposisi LIKE '%$cari%'";
+                      }
+                      $query .= " LIMIT $offset, $limit";
+                      $result = mysqli_query($konek, $query);
+                      if (mysqli_num_rows($result) > 0) {
+                        while ($t = mysqli_fetch_array($result)) {
                       ?>
-                            <tbody>
-                              <tr>
-                                <td><?= $p['1']; ?></td>
-                                <td><?= $p['2']; ?></td>
-                                <td><?= $p['3']; ?></td>
-                                <td><?= $p['4']; ?></td>
-                                <td><?= $p['5']; ?></td>
-                                <td><?= $p['6']; ?></td>
-                                <td><?= $p['7']; ?></td>
-                                <td align="center">
-                                  <a href="detaildispo.php?detaildispo=<?php echo $p['2']; ?>" class="text-success" style="text-decoration: none;">
-                                    <i class="bi bi-file-earmark-fill"></i>
-                                  </a>
-                                  <?php
-                                  if ($_SESSION['level'] == 'admin') {
-                                  ?>
-                                    <a href="editdisposisi.php?id=<?php echo $p['0']; ?>" class="text-dark" style="text-decoration: none;">
-                                      <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <a href="?hapusdispo=<?php echo $p['1']; ?>" class="text-danger" style="text-decoration: none;" onclick="return confirm('Yakin data akan dihapus?');">
-                                      <i class="bi bi-trash"></i>
-                                    </a>
-                                  <?php
-                                  }
-                                  ?>
-                                </td>
-                              </tr>
-                            </tbody>
-                          <?php
-                          }
-                        } else {
-                          ?>
-                          <tr>
-                            <td colspan="8" align="center">Data tidak ditemukan.</td>
-                          </tr>
-                        <?php
-                        }
-                      } else {
-                        // Menampilkan semua data
-                        $query = mysqli_query($konek, "SELECT * FROM disposisi LIMIT $limit OFFSET $offset");
-                        while ($t = mysqli_fetch_array($query)) {
-                        ?>
                           <tbody>
                             <tr>
                               <td><?php echo $t['1']; ?></td>
@@ -140,54 +118,52 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
                                 <a href="detaildispo.php?detaildispo=<?php echo $t['2']; ?>" class="text-success" style="text-decoration: none;">
                                   <i class="bi bi-file-earmark-fill"></i>
                                 </a>
-                                  <?php
-                                  if ($_SESSION['level'] == 'admin') {
-                                  ?>
-                                    <a href="editdisposisi.php?id=<?php echo $t['1']; ?>" class="text-primary" style="text-decoration: none;">
-                                      <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <a href="?hapusdispo=<?php echo $t['1']; ?>" class="text-danger" style="text-decoration: none;" onclick="return confirm('Yakin data akan dihapus?');">
-                                      <i class="bi bi-trash"></i>
-                                    </a>
-                                  <?php
-                                  }
-                                  ?>
+                                <?php
+                                if ($_SESSION['level'] == 'admin') {
+                                ?>
+                                  <a href="editdisposisi.php?id=<?php echo $t['1']; ?>" class="text-primary" style="text-decoration: none;">
+                                    <i class="bi bi-pencil-square"></i>
+                                  </a>
+                                  <a href="?hapusdispo=<?php echo $t['1']; ?>" class="text-danger" style="text-decoration: none;" onclick="return confirm('Yakin data akan dihapus?');">
+                                    <i class="bi bi-trash"></i>
+                                  </a>
+                                <?php
+                                }
+                                ?>
                               </td>
                             </tr>
                           </tbody>
-                      <?php
+                        <?php
                         }
+                      } else {
+                        ?>
+                        <tr>
+                          <td align="center" colspan="8"> Data tidak ditemukan </td>
+                        </tr>
+                      <?php
                       }
                       ?>
                     </table>
                   </form>
-
-                  <?php
-                  // Hitung total data
-                  $total_query = "SELECT COUNT(*) FROM disposisi";
-                  $total_result = mysqli_query($konek, $total_query);
-                  $total_rows = mysqli_fetch_array($total_result)[0];
-                  $total_pages = ceil($total_rows / $limit);
-                  ?>
 
                   <!-- Pagination -->
                   <nav aria-label="Page navigation">
                     <ul class="pagination">
                       <!-- Tombol Previous -->
                       <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?page=<?= ($page > 1) ? $page - 1 : 1; ?>">Previous</a>
+                        <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= ($page > 1) ? $page - 1 : 1; ?>">Previous</a>
                       </li>
 
                       <!-- Nomor Halaman -->
-                      <?php for ($i = 1; $i <= $total_pages; $i++) : ?>
+                      <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                         <li class="page-item <?= ($i == $page) ? 'active' : ''; ?>">
-                          <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+                          <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= $i; ?>"><?= $i; ?></a>
                         </li>
                       <?php endfor; ?>
 
                       <!-- Tombol Next -->
-                      <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?page=<?= ($page < $total_pages) ? $page + 1 : $total_pages; ?>">Next</a>
+                      <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                        <a class="page-link" href="?cari=<?= $cari ?>&limit=<?= $limit ?>&page=<?= ($page < $totalPages) ? $page + 1 : $totalPages; ?>">Next</a>
                       </li>
                     </ul>
                   </nav>
@@ -211,14 +187,14 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
           <font><b>Disposisikan Surat</b></font>
         </center>
       </div>
-      <div class="modal-body">
-        <form method="POST" action="" enctype="multipart/form-data">
+      <form method="POST" action="" enctype="multipart/form-data">
+        <div class="modal-body">
           <div class="form-group">
             <?php
             //kode otomatis
             $dispo = $konek->query("select max(no_disposisi) as maxDis from disposisi");
             $datadis  = mysqli_fetch_array($dispo);
-            $noSur4 = $datadis['maxDis'];
+            $noSur4 = $datadis['maxDis'] ?? 0;
 
             $noUrut4 = (int) substr($noSur4, 6, 6);
             $noUrut4++;
@@ -227,9 +203,9 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
             $newDISPO = $char4 . sprintf("%03s", $noUrut4);
             ?>
             <label>No Disposisi :</label>
-            <input class="form-control" type="text" name="nodispo" value="<?php echo $newDISPO; ?>" readonly />
+            <input class="form-control mb-2" type="text" name="nodispo" value="<?php echo $newDISPO; ?>" autocomplete="off" readonly />
             <label>Pilih No Surat :</label>
-            <select class="form-control" name="pisur">
+            <select class="form-control mb-2" name="pisur">
               <?php
               $dispo = mysqli_query($konek, "select * from surat_masuk");
               while ($dispo1 = mysqli_fetch_array($dispo)) {
@@ -241,11 +217,11 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
               ?>
             </select>
             <label>Tanggal Disposisi :</label>
-            <input class="form-control" type="text" id="tanggal1" name="tgl_dispo" value="" />
+            <input class="form-control mb-2" type="text" id="tanggal1" name="tgl_dispo" placeholder="Masukkan tanggal disposisi" value="" autocomplete="off" />
             <label>Pengirim Disposisi :</label>
-            <input class="form-control" type="text" name="pengirim" value="<?php echo $_SESSION['no_peg']; ?>" readonly />
+            <input class="form-control mb-2" type="text" name="pengirim" value="<?php echo $_SESSION['no_peg']; ?>" readonly autocomplete="off" />
             <label>Disposisikan Kepada :</label>
-            <select class="form-control" name="peg">
+            <select class="form-control mb-2" name="peg">
               <?php
               $peg = mysqli_query($konek, "select * from pegawai");
               while ($peg1 = mysqli_fetch_array($peg)) {
@@ -257,17 +233,17 @@ $offset = ($page - 1) * $limit; // Menghitung data mulai dari index ke berapa
               ?>
             </select>
             <label>Subject :</label>
-            <input class="form-control" type="text" name="judul_dispo" placeholder="masukan subject" />
+            <input class="form-control mb-2" type="text" name="judul_dispo" placeholder="Masukan subject" autocomplete="off" />
             <label>Catatan :</label>
-            <textarea class="form-control" type="text" name="catatan_dispo" placeholder="masukan catatan disposisi"></textarea>
+            <textarea class="form-control" type="text" name="catatan_dispo" placeholder="Masukan catatan disposisi"></textarea>
           </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button class="btn btn-primary" name="dispo">Disposisikan</button>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button class="btn btn-primary" name="dispo">Disposisikan</button>
+        </div>
     </div>
+    </form>
   </div>
 </div>
 <?php
