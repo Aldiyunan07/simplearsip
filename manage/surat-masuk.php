@@ -192,7 +192,11 @@ if (empty($_SESSION['username'])) {
           //kode otomatis
           $que5 = $konek->query("select max(kd_sumas) as maxKd from surat_masuk");
           $data5  = mysqli_fetch_array($que5);
-          $noSur5 = $data5['maxKd'] ?? 0;
+          if (isset($data5['maxKd'])) {
+            $noSur5 = $data5['maxKd'];
+          } else {
+            $noSur5 = 0;
+          }
 
           $noUrut5 = (int) substr($noSur5, 6, 6);
           $noUrut5++;

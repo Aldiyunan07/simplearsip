@@ -194,8 +194,11 @@ if (empty($_SESSION['username'])) {
             //kode otomatis
             $dispo = $konek->query("select max(no_disposisi) as maxDis from disposisi");
             $datadis  = mysqli_fetch_array($dispo);
-            $noSur4 = $datadis['maxDis'] ?? 0;
-
+            if (isset($datadis['maxDis'])) {
+              $noSur4 = $datadis['maxDis'];
+            } else {
+              $noSur4 = 0;
+            }
             $noUrut4 = (int) substr($noSur4, 6, 6);
             $noUrut4++;
 

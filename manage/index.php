@@ -53,7 +53,7 @@
                             <div class="inner">
                                 <h3><?php
                                     $penerima = $_SESSION['no_peg'];
-                                    $dis = mysqli_query($konek, "select * from disposisi where penerima='$penerima'"); {
+                                    $dis = mysqli_query($konek, "select * from disposisi"); {
                                     ?>
                                     <?php
                                         echo mysqli_num_rows($dis);
