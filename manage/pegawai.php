@@ -65,7 +65,7 @@ if (isset($_POST['tambah'])) {
                   <div class="col-md-7">
                     <div class="d-flex flex-row-reverse bd-highlight">
                       <button data-toggle="modal" data-target="#MyPeg" class="btn btn-success"> Tambah Pegawai </button>
-                      <a href="../tpl/print1.php" class="btn btn-secondary me-2"> Print </a>
+                      <a href="fpdf/pdf_export.php?query=pegawai" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>

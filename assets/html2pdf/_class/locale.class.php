@@ -62,13 +62,19 @@ class HTML2PDF_locale
 
         // load the file
         self::$_list = array();
-        $handle = fopen($file, 'r');
-        while (!feof($handle)) {
-            $line = fgetcsv($handle);
-            if (count($line)!=2) continue;
-            self::$_list[trim($line[0])] = trim($line[1]);
+        if (($handle = fopen($file, 'r')) !== false) {
+            while (($line = fgetcsv($handle)) !== false) {
+                if (count($line) === 2) {
+                    self::$_list[trim($line[0])] = trim($line[1]);
+                } else {
+                    // Handle lines with incorrect format (e.g., log, skip)
+                    error_log("Invalid format in locale file: $file, line: " . fgetcsv($handle));
+                }
+            }
+            fclose($handle);
+        } else {
+            throw new HTML2PDF_exception(0, "Unable to open locale file: $file");
         }
-        fclose($handle);
     }
 
     /**

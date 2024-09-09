@@ -39,7 +39,7 @@ if (empty($_SESSION['username'])) {
                         echo "<button data-toggle='modal' data-target='#MyMod' class='btn btn-success'> Tambah Surat Masuk </button>";
                       }
                       ?>
-                      <a href="../tpl/print1.php" class="btn btn-secondary me-2"> Print </a>
+                      <a href="fpdf/pdf_export.php?query=sumas" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>
@@ -93,13 +93,13 @@ if (empty($_SESSION['username'])) {
                     <table class="table table-bordered table-striped">
                       <thead>
                         <tr>
-                          <th>Kode Surat</th>
-                          <th>No Surat</th>
-                          <th>Tgl Surat Datang</th>
-                          <th>Instansi</th>
-                          <th>Judul Surat</th>
-                          <th>Isi</th>
-                          <th>Aksi</th>
+                          <th style="text-align: center;">Kode Surat</th>
+                          <th style="text-align: center;">No Surat</th>
+                          <th style="text-align: center;">Tgl Surat Datang</th>
+                          <th style="text-align: center;">Instansi</th>
+                          <th style="text-align: center;">Judul Surat</th>
+                          <th style="text-align: center;">Isi</th>
+                          <th style="text-align: center;">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -114,7 +114,7 @@ if (empty($_SESSION['username'])) {
                               <td><?= $t['instansi']; ?></td>
                               <td><?= $t['judul']; ?></td>
                               <td><?= $t['isi']; ?></td>
-                              <td align="center">
+                              <td style="text-align: center;">
                                 <a href="detailsumas.php?details=<?= $t['kd_sumas'] ?>" style="text-decoration: none;" class="text-success">
                                   <i class="bi bi-info"></i>
                                 </a>
@@ -137,7 +137,7 @@ if (empty($_SESSION['username'])) {
                         } else {
                           ?>
                           <tr>
-                            <td align="center" colspan="7">Data tidak ditemukan.</td>
+                            <td style="text-align: center;" colspan="7">Data tidak ditemukan.</td>
                           </tr>
                         <?php
                         }

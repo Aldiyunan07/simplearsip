@@ -40,7 +40,7 @@ if (empty($_SESSION['username'])) {
                         echo "<button data-toggle='modal' data-target='#MyLose' class='btn btn-success'> Tambah Surat Keluar </button>";
                       }
                       ?>
-                      <a href="../tpl/print1.php" class="btn btn-secondary me-2"> Print </a>
+                      <a href="fpdf/pdf_export.php?query=sukel" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>
@@ -70,13 +70,13 @@ if (empty($_SESSION['username'])) {
                     <table class="table table-bordered table-striped">
                       <thead>
                         <tr>
-                          <th>Kode Surat</th>
-                          <th>No Surat</th>
-                          <th>Tgl Surat</th>
-                          <th>Instansi</th>
-                          <th>Judul Surat</th>
-                          <th>Isi</th>
-                          <th>Aksi</th>
+                          <th style="text-align: center;">Kode Surat</th>
+                          <th style="text-align: center;">No Surat</th>
+                          <th style="text-align: center;">Tgl Surat</th>
+                          <th style="text-align: center;">Instansi</th>
+                          <th style="text-align: center;">Judul Surat</th>
+                          <th style="text-align: center;">Isi</th>
+                          <th style="text-align: center;">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>

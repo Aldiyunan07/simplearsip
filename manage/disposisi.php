@@ -40,7 +40,7 @@ if (empty($_SESSION['username'])) {
                         echo "<button data-toggle='modal' data-target='#myDispo' class='btn btn-success'> Tambah Disposisi </button>";
                       }
                       ?>
-                      <a href="../tpl/printdispoall.php" class="btn btn-secondary me-2"> Print </a>
+                      <a href="fpdf/pdf_export.php?query=disposisi" class="btn btn-secondary me-2"> Print </a>
                     </div>
                   </div>
                 </div>
@@ -71,14 +71,14 @@ if (empty($_SESSION['username'])) {
                     <table id="pegawai" class="table table-striped table-hover">
                       <thead>
                         <tr>
-                          <th>No Disposisi</th>
-                          <th>No Sumas</th>
-                          <th>Tgl Disposisi</th>
-                          <th>Penerima</th>
-                          <th>Judul Dispo</th>
-                          <th>Catatan/Deskripsi</th>
-                          <th>Pengirim</th>
-                          <th>Aksi</th>
+                          <th style="text-align: center;">No Disposisi</th>
+                          <th style="text-align: center;">No Sumas</th>
+                          <th style="text-align: center;">Tgl Disposisi</th>
+                          <th style="text-align: center;">Penerima</th>
+                          <th style="text-align: center;">Judul Dispo</th>
+                          <th style="text-align: center;">Catatan/Deskripsi</th>
+                          <th style="text-align: center;">Pengirim</th>
+                          <th style="text-align: center;">Aksi</th>
                         </tr>
                       </thead>
                       <?php
@@ -114,7 +114,7 @@ if (empty($_SESSION['username'])) {
                               <td><?php echo $t['5']; ?></td>
                               <td><?php echo $t['6']; ?></td>
                               <td><?php echo $t['7']; ?></td>
-                              <td align="center">
+                              <td style="text-align: center;">
                                 <a href="detaildispo.php?detaildispo=<?php echo $t['2']; ?>" class="text-success" style="text-decoration: none;">
                                   <i class="bi bi-file-earmark-fill"></i>
                                 </a>
@@ -138,7 +138,7 @@ if (empty($_SESSION['username'])) {
                       } else {
                         ?>
                         <tr>
-                          <td align="center" colspan="8"> Data tidak ditemukan </td>
+                          <td style="text-align: center;" colspan="8"> Data tidak ditemukan </td>
                         </tr>
                       <?php
                       }
