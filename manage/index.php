@@ -63,8 +63,8 @@
                                 <p>Disposisi</p>
                             </div> <i class="small-box-icon bi bi-arrow-left-right"></i> <a href="disposisi.php" style="text-decoration: none;" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                                 More info <i class="fa fa-arrow-circle-right"></i></a>
-                        </div> <!--end::Small Box Widget 1-->
-                    </div> <!--end::Col-->
+                        </div>
+                    </div>
 
                     <?php
                     if ($_SESSION['level'] == "admin") {
